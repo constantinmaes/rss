@@ -1,0 +1,17 @@
+html
+  head
+    link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css")
+
+
+h1 RSS Client
+
+h2= title
+h4= pubDate
+
+table.table
+  each article in articles
+    tr
+      td= article.title
+      td= article.pubDate
+      td
+        a(href=article.link) Ouvrir
