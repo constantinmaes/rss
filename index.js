@@ -35,10 +35,30 @@ async function routine() {
 
 async function saveArticles(articles, fluxId) {
     for (const article of articles) {
-        await connection.execute(
-            'INSERT INTO rss.articles (title , pubDate, link, flux_id) VALUES(?, ?, ?, ?)',
-            [article.title, article.pubDate, article.link, fluxId]
-        );
+        try {
+            const [rows, fields] = await connection.execute(
+                'SELECT * FROM rss.articles WHERE link = ?',
+                [article.link]
+            );
+            if (rows.length > 0) {
+                console.log('Article already exists');
+                continue;
+            }
+            const correctDate = Date.parse(article.pubDate);
+            const mysqlDate = new Date(correctDate)
+                .toISOString()
+                .slice(0, 19)
+                .replace('T', ' ');
+            //console.log(new Date(correctDate).toISOString(), mysqlDate);
+            await connection.execute(
+                'INSERT INTO rss.articles (title , pubDate, link, flux_id) VALUES(?, ?, ?, ?)',
+                [article.title, mysqlDate, article.link, fluxId]
+            );
+        } catch (e) {
+            console.error('Error while inserting article', e);
+            // break;
+            continue;
+        }
     }
 }
 
