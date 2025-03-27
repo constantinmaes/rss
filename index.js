@@ -64,14 +64,33 @@ async function saveArticles(articles, fluxId) {
 
 app.get('/', async (req, res) => {
     console.log('GET request', new Date());
-    const { title, pubDate, articles } = await routine();
-    // res.send('Hello');
-    /*res.status(200).json({
-        title,
-        pubDate,
-        articles,
-    });*/
-    res.render('index', { title, pubDate, articles });
+    const [articles, fields] = await connection.execute(
+        'SELECT * FROM rss.articles ORDER BY pubDate DESC LIMIT 50'
+    );
+    res.render('index', { title: '', pubDate: '', articles });
+});
+
+app.get('/flux', async (req, res) => {
+    const [flux, fields] = await connection.execute('SELECT * FROM rss.flux');
+    // res.render('flux', { flux });
+});
+
+// /flux/:id
+app.get('/flux/:id', async (req, res) => {
+    const fluxId = req.params.id;
+    const [articles, fields] = await connection.execute(
+        'SELECT * FROM rss.articles WHERE flux_id = ? ORDER BY pubDate DESC LIMIT 50',
+        [fluxId]
+    );
+    res.render('index', { title: '', pubDate: '', articles });
+});
+
+app.delete('/flux/:id', async (req, res) => {
+    const fluxId = req.params.id;
+    await connection.execute('DELETE FROM rss.articles WHERE flux_id = ?', [
+        fluxId,
+    ]);
+    //res.send('OK');
 });
 
 app.listen(port, async () => {
